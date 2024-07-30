@@ -1,3 +1,4 @@
+
 const checkInput = function(req, res, next){
     const userDetails=req.body
     const isEmpty = Object.keys(userDetails).length===0;
@@ -14,6 +15,7 @@ const checkInput = function(req, res, next){
 const createFactory = (elementModel) => async (req, res) => {
     try {
         const elementDetails = req.body;
+        console.log(elementDetails);
         const isEmpty = Object.keys(elementDetails).length === 0;
         if (!isEmpty) {
             const data = await elementModel.create(elementDetails);
@@ -27,7 +29,7 @@ const createFactory = (elementModel) => async (req, res) => {
         }
     } catch (err) {
         res.status(500).json({
-            message: "error ",
+            message: err.message,
         })
     }
 }

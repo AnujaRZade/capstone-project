@@ -1,4 +1,5 @@
 const mongoose=require("mongoose")
+
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -29,6 +30,9 @@ const userSchema = new mongoose.Schema({
     createdAt: Date
 })
 
+userSchema.pre("save",function(){
+    this.confirmedPassword=undefined;
+})
 /** create a model */
 const User = mongoose.model("User", userSchema);
 module.exports=User;
