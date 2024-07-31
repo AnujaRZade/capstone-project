@@ -1,13 +1,13 @@
 
-const checkInput = function(req, res, next){
-    const userDetails=req.body
-    const isEmpty = Object.keys(userDetails).length===0;
-    if(isEmpty){
+const checkInput = function (req, res, next) {
+    const userDetails = req.body
+    const isEmpty = Object.keys(userDetails).length === 0;
+    if (isEmpty) {
         res.status(400).json({
-            status:400,
-            message:"Body cannot be empty",
+            status: 400,
+            message: "Body cannot be empty",
         })
-    }else{
+    } else {
         next();
     }
 }
@@ -37,14 +37,14 @@ const createFactory = (elementModel) => async (req, res) => {
 const getElementByIdFactory = (elementModel) => async (req, res) => {
     try {
         const { id } = req.params;
-        const data =await elementModel.findById(id);
-        if(data== undefined){
+        const data = await elementModel.findById(id);
+        if (data == undefined) {
             throw new Error("not data found");
         }
-        else{
+        else {
             res.status(200).json({
                 message: "data found",
-                data: data,  
+                data: data,
             })
         }
 
@@ -56,10 +56,10 @@ const getElementByIdFactory = (elementModel) => async (req, res) => {
         })
     }
 }
-const updateElementFactory=(elementModel)=> async(req,res) =>{
-    try{
-        const { id }=req.params;
-        const elementDetails= req.body;
+const updateElementFactory = (elementModel) => async (req, res) => {
+    try {
+        const { id } = req.params;
+        const elementDetails = req.body;
         const isEmpty = Object.keys(elementDetails).length === 0;
         if (!isEmpty) {
             const data = await elementModel.findByIdAndUpdate(id, elementDetails, { new: true })
@@ -79,29 +79,26 @@ const updateElementFactory=(elementModel)=> async(req,res) =>{
 }
 
 
-const getAllFactory=(elementModel)=>async(req,res)=>{
+const getAllFactory = (elementModel) => async (req, res, next) => {
     try {
-        
-        const data =await elementModel.find();
-        if(data == undefined){
+
+        const data = await elementModel.find();
+        if (data == undefined) {
             throw new Error("not data found");
         }
-        else{
+        else {
             res.status(200).json({
                 message: "data found",
-                data: data,  
+                data: data,
             })
         }
 
 
     } catch (err) {
-        res.status(500).json({
-            status: 500,
-            message: err.message,
-        })
+        next(err);
     }
 }
-const deleteElementByIdFactory = (elementModel) => async (req, res) => {
+const deleteElementByIdFactory = (elementModel) => async (req, res, next) => {
     try {
         const { id } = req.params;
         const data = await elementModel.findByIdAndDelete(id);
@@ -114,12 +111,9 @@ const deleteElementByIdFactory = (elementModel) => async (req, res) => {
             throw new Error("No data found");
         }
     } catch (err) {
-        res.status(500).json({
-            status: 500,
-            message: err.message,
-        })
+        next(err);
     }
 }
 module.exports = {
-   checkInput, createFactory, getElementByIdFactory, getAllFactory, deleteElementByIdFactory,updateElementFactory,
+    checkInput, createFactory, getElementByIdFactory, getAllFactory, deleteElementByIdFactory, updateElementFactory,
 }

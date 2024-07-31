@@ -52,6 +52,14 @@ app.use(express.json()); // Middleware to parse JSON requests
 app.use('/api/user', userRouter)
 app.use('/api/product', productRouter)
 
+app.use((err, req, res, next)=>{
+    const statusCode=err.statusCode || 500
+    const message = err.message || "Internal Server Error"
+    res.status(statusCode).json({
+        status: statusCode,
+        message: message,
+    })
+})
 /* app.get('/api/user', getUserHandler)
 app.post('/api/user', checkInput, createUserHandler) //chaining
 app.get("/api/user/:id", getUserById)
