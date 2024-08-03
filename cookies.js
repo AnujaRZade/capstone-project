@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");//for signin
 
 const SECRET_KEY = "someRandomKey@12321" // for signin
 const User = require("./models/userModels"); // for signup
+
 const mongoose = require("mongoose") //for signup
 const app = express()
 app.use(express.json());
@@ -34,7 +35,7 @@ app.get("/", (req, res) => {
     res.json({ message: "welcome to the homepage" })
 })
 
-app.get("/products", (req, res) => {
+app.get("/checkCookie", (req, res) => {
     console.log(req.cookies);
     const { pageVisited } = req.cookies // if cookies TTL is not expired then pagevisited with contain cookie info
     if (pageVisited) { //if recently set cookie has not expired then do this
@@ -78,29 +79,70 @@ app.get("/clearCookies", (req, res) => {
     })
 })
 
-app.get("/signin", async (req, res) => {
+app.get("/signin", (req, res) => {
     const payload = 1234; // secret data to passed to token
 
     try {
-        jwt.sign(
-            { data: payload },
-            SECRET_KEY,
-            { expiresIn: "1h" },
-            function (err, data) {
-                if (err) {
-                    throw new Error(err.message)
-                }
-                res.cookie("token", data,
-                    { maxAge: 1000 * 60 * 60 * 24, httpOnly: true });
-                res.json({ message: data });
+        jwt.sign({ data: payload }, SECRET_KEY, { expiresIn: "1h" }, function (err, data) {
+            if (err) {
+                throw new Error(err.message)
             }
-        );
+            res.cookie("token", data,
+                { maxAge: 1000 * 60 * 60 * 24, httpOnly: true });
+            res.json({ message: data });
+        });
     } catch (err) {
-        res.status(500).json({
+        res.status(500).json({ 
             message: err.message,
         })
     }
 })
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Find the user in the database
+        const user = await User.findOne({ email: email });
+
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        // Validate the password (in a real app, hash and compare the password)
+        if (user.password !== password) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        // Create JWT payload with user-specific information
+        const payload = {
+            id: user._id,
+            email: user.email
+        };
+
+        // Sign the JWT with the payload
+        const data = jwt.sign({data:payload}, SECRET_KEY, { expiresIn: '1h' });
+
+        // Set the JWT as a cookie
+        res.cookie('token', data, {
+            maxAge: 1000 * 60 * 60, // 1 hour
+            httpOnly: true // Prevents client-side access to the cookie
+        });
+
+        // Send response with user information and token
+        res.json({
+            message: 'Login successful',
+            user: {
+                id: user._id,
+                email: user.email
+            },
+            token: data
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 // decrpting what was sent encrypted by signin  api 
 app.get("/verify", (req, res) => {
@@ -110,9 +152,12 @@ app.get("/verify", (req, res) => {
             return res.status(400).json({ message: "No token provided" });
         } else {
             const decoded = jwt.verify(token, SECRET_KEY);
+            const userId = decoded._id; // Extract user ID from the decoded token
+
             res.json({
-                message: decoded
-            })
+                message: 'Token verified successfully',
+                userId: userId, // Send back user ID
+            });
         }
     } catch (err) {
         console.log(err);
@@ -131,38 +176,7 @@ app.post("/signup", async function (req, res) {
     }
 })
 
-app.post("/login", async function (req, res) {
-    // validate credentials
-    //send token
-    try {
-        const { email, password } = req.body
-        const user = await User.findOne({ email: email });
-        if (!user) {
-            res.status(400).json({
-                message: "user not found"
-            })
-        } else {
-            if (user.password === password) {
-                const token = jwt.sign({ data: user._id }, SECRET_KEY, { expiresIn: '1h' });
-                res.cookie('token', token, {
-                    maxAge: 1000 * 60 * 60 * 24,
-                    httpOnly: true,
-                })
-                return res.json({
-                    message: "Login successful",
-                    data: user
-                });
 
-            } else {
-                res.status(400).json({
-                    message: "invalid credentials"
-                })
-            }
-        }
-    } catch (err) {
-        console.log(err.message);
-    }
-})
 
 const protectRoute = async function (req, res, next) {
     try {

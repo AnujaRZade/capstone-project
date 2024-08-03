@@ -1,4 +1,4 @@
-const mongoose=require("mongoose")
+const mongoose = require("mongoose")
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         minLength: 8
     },
-    confirmedPassword: {
+    confirmedPassword: {  
         type: String,
         //required: true,
         minLength: 8,
@@ -27,12 +27,18 @@ const userSchema = new mongoose.Schema({
         }
     },
     id: String,
-    createdAt: Date
+    
+    token: String, //for forgot password
+    otpExpiry: Date, //expiry for token
+    role: {
+        type: String,
+        default: 'user',
+    }
 })
 
-userSchema.pre("save",function(){
-    this.confirmedPassword=undefined;
+userSchema.pre("save", function () {
+    this.confirmedPassword = undefined;
 })
 /** create a model */
 const User = mongoose.model("User", userSchema);
-module.exports=User;
+module.exports = User;
