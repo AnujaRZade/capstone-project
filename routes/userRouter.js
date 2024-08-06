@@ -3,25 +3,25 @@ userRouter = express.Router();
 
 const { checkInput } = require("../utils/crudFactory")
 
-const{
+const {
     createUserHandler,
     getUserById,
     getUserHandler,
     updateUserById,
     deleteUserById,
-    forgetPassword,
-    resetPassword
-} = require ("../controllers/userControllers");
+
+} = require("../controllers/userControllers");
+const { protectRoute, isAdmin, logoutHandler } = require('../controllers/authControllers');
+
+userRouter.use(protectRoute);
 
 /**Orignal path for get users looked like /api/users/  ***/
-userRouter.get("/", getUserHandler)
-userRouter.post("/",checkInput, createUserHandler);
+userRouter.get("/", isAdmin, getUserHandler)
+userRouter.post("/", checkInput, createUserHandler);
+userRouter.get("/logout", logoutHandler);
 userRouter.get("/:id", getUserById)
 userRouter.patch("/:id", updateUserById)
 userRouter.delete("/:id", deleteUserById)
-
-userRouter.post("/forgetPassword", forgetPassword)
-userRouter.patch("/resetPassword/:userId", resetPassword)
 
 
 module.exports = userRouter;

@@ -36,6 +36,22 @@ const userSchema = new mongoose.Schema({
     }
 })
 
+const validRoles=["admin","user","seller"]
+userSchema.pre("save", function(){
+    this.confirmedPassword=undefined;
+    if(this.role){
+        const Valid=validRoles.includes(this.role);
+        if(!Valid){
+            next(new Error("user can either be admin, user or seller"))
+        }else{
+            next()
+        }
+    }else{
+        this.role="user"
+        next()
+    }
+})
+
 userSchema.pre("save", function () {
     this.confirmedPassword = undefined;
 })

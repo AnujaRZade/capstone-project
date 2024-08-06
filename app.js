@@ -1,9 +1,11 @@
 const express = require('express') //common js module\
 
 const mongoose = require("mongoose");
+const cookieParser=require("cookie-parser");
 
 const userRouter = require("./routes/userRouter");
 const productRouter = require("./routes/productRouter");
+const authRouter=require("./routes/authRouters");
 
 
 require('dotenv').config() //help read configuration in .env fie and make available in process.env
@@ -18,39 +20,12 @@ mongoose.connect(process.env.DB_URL).then((connection) => {
 })
 
 const app = express()
-app.use(express.json()); // Middleware to parse JSON requests
-
-// app.use("/search", async function (req, res) {
-//     const sortQuery = req.query.sort;
-//     const selectQuery = req.query.select;
-//     /* sorting logic */
-//     let queryResPromise = Product.find();
-
-//     if (sortQuery) {
-//         const [sortParam, order] = sortQuery.split(" ");
-//         console.log("sortParams", sortParam); console.log("order", order);
-
-//         if (order === "asc") {
-//             queryResPromise = queryResPromise.sort(sortParam)
-
-//         } else {
-//             queryResPromise = queryResPromise.sort(`-${sortParam}`)
-//         }
-//     }
-
-   
-
-//     const result = await queryResPromise
-
-
-//     res.status(200).json({
-//         message: "search successfull",
-//         data: result
-//     })
-// })
+app.use(express.json()) // Middleware to parse JSON requests
+app.use(cookieParser())
 
 app.use('/api/user', userRouter)
 app.use('/api/product', productRouter)
+app.use('/api/auth', authRouter);
 
 app.use((err, req, res, next)=>{
     const statusCode=err.statusCode || 500
@@ -60,14 +35,6 @@ app.use((err, req, res, next)=>{
         message: message,
     })
 })
-/* app.get('/api/user', getUserHandler)
-app.post('/api/user', checkInput, createUserHandler) //chaining
-app.get("/api/user/:id", getUserById)
-app.patch("/api/user/:id", updateUserById)*/
-/* app.get('/api/product', getProductHandler)
-app.post('/api/product', checkInput, createProductHandler) //chaining
-// app.get("/api/product/:id", getProductById)
-// app.patch("/api/product/:id", updateProductById)*/
 
 //Catch-all route, default fallback kind of middleware for all remaining routes
 app.use(function (req, res) {

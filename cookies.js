@@ -92,7 +92,7 @@ app.get("/signin", (req, res) => {
             res.json({ message: data });
         });
     } catch (err) {
-        res.status(500).json({ 
+        res.status(500).json({
             message: err.message,
         })
     }
@@ -121,7 +121,7 @@ app.post('/login', async (req, res) => {
         };
 
         // Sign the JWT with the payload
-        const data = jwt.sign({data:payload}, SECRET_KEY, { expiresIn: '1h' });
+        const data = jwt.sign({ data: payload }, SECRET_KEY, { expiresIn: '1h' });
 
         // Set the JWT as a cookie
         res.cookie('token', data, {
@@ -167,14 +167,27 @@ app.get("/verify", (req, res) => {
 app.post("/signup", async function (req, res) {
     try {
         const userObj = req.body;
-        const user = await User.create(userObj)
-        res.json({
-            message: "user created", user
-        })
+
+        // Input validation can be added here
+        // For example, checking if required fields are present
+        const user = await User.create(userObj);
+
+        // Send success response with status code 201 for resource creation
+        res.status(201).json({
+            message: "User created successfully",
+            user
+        });
     } catch (err) {
-        console.log(err.message);
+        console.error(err.message);
+
+        // Send error response with appropriate status code
+        res.status(500).json({
+            message: "Internal server error",
+            error: err.message
+        });
     }
 })
+
 
 
 

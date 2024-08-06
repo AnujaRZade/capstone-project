@@ -10,16 +10,19 @@ const {
     getProductHandler,
     updateProductById,
     deleteProductById,
-
 } = require("../controllers/productControllers");
+const { isAuthorized,protectRoute } = require('../controllers/authControllers');
+
+const authorizedProductRoles=["admin", "ceo", "sales"]
+
 
 /**Orignal path for get products looked like /api/products/  ***/
 productRouter.get("/", getProducts)
-productRouter.post("/", checkInput, createProductHandler);
+productRouter.post("/", checkInput,protectRoute, isAuthorized(authorizedProductRoles), createProductHandler);
 productRouter.get("/bigBillionDay", getBigBillionProducts, getProducts)
 productRouter.get("/:id", getProductById)
 productRouter.patch("/:id", updateProductById)
-productRouter.delete("/:id", deleteProductById)
+productRouter.delete("/:id", protectRoute, isAuthorized(authorizedProductRoles), deleteProductById)
 
 
 async function getBigBillionProducts(req, res, next) {
