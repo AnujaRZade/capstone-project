@@ -38,7 +38,7 @@ const otpGenerator = () => {
     //mathrandom will generate unique nos from 0 to 0.9
     //if math.random generates 0- lowest no will 100000 and max no 0.9 mulplied by 900000 will be 899999- so largest no=999999
 }
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res) => { 
     //user send the token and the new password
     //verify the token is valid
     //update the user's password
@@ -49,19 +49,19 @@ const resetPassword = async (req, res) => {
         const user = await User.findById(userId);
         console.log(`Received request for userId: ${userId}`);
         if (!user) {
-            res.status(400).json({
+            res.status(404).json({
                 status: "fail",
                 message: "User not found",
             })
         } else {
             if (user.token !== token) {
-                res.status(400).json({
+                res.status(401).json({
                     status: "fail",
                     message: "invalid token",
                 })
             } else {
                 if (user.otpExpiry < Date.now()) {
-                    res.status(400).json({
+                    res.status(401).json({
                         status: "fail",
                         message: "Token expired",
                     })
@@ -110,7 +110,7 @@ const forgetPassword = async (req, res) => {
         } else {
             // Generate a 6-digit OTP using the otpGenerator function
             const token = otpGenerator();
-
+ol
             // Save the OTP and set an expiration time (5 minutes from now)
             user.token = token.toString();
             user.otpExpiry = Date.now() + 1000 * 60 * 5; // Set OTP to expire in 5 minutes
@@ -129,7 +129,7 @@ const forgetPassword = async (req, res) => {
 
             // Respond with a success message
             res.status(200).json({
-                status: "success",
+                status: "success",      
                 message: "Token sent to your email",
             });
         }
@@ -145,18 +145,28 @@ const forgetPassword = async (req, res) => {
 
 const isAuthorized = function (allowedRoles) {
     return async function (req, res, next) {
-        const userId = req.userId;
-        console.log(userId)
-        const user = await User.findById(userId)
-        if (allowedRoles.includes(user.role)) {
-            next()
-        } else {
-            res.status(401).json({
-                message: "you are not authorized to access this "
-            })
+        try {
+            const userId = req.userId;
+            console.log(userId)
+            const user = await User.findById(userId)
+            if (allowedRoles.includes(user.role)) {
+                next()
+            } else {
+                res.status(401).json({
+                    message: "you are not authorized to access this "
+                })
+            }
+        }
+        catch (error) {
+            // Handle unexpected errors, such as database errors
+            console.error("Error in isAuthorized middleware:", error);
+            res.status(500).json({
+                message: "Internal server error"
+            });
         }
     }
 }
+
 const isAdmin = async (req, res, next) => {
     try {
         const userId = req.userId; // Use req.userId, which should be set by protectRoute middleware
@@ -171,7 +181,6 @@ const isAdmin = async (req, res, next) => {
                 message: "User not found",
             });
         }
-
         // Check if the user has an admin role
         if (user.role === "admin") {
             next();
@@ -185,7 +194,6 @@ const isAdmin = async (req, res, next) => {
         // Handle any unexpected errors
         console.error("Error in isAdmin middleware:", err);
         res.status(500).json({
-            status: "error",
             message: "Internal server error",
         });
     }
