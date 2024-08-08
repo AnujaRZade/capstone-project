@@ -22,7 +22,11 @@ const productSchema = new mongoose.Schema({
         type: [String],
     },
     images: [String],
-    avgRatings: Number,
+    avgRatings: {
+        type: Number,
+        min: 0,
+        max: 5
+    },
     discount: {
         type: Number,
         validate: {
@@ -51,6 +55,11 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    reviews: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "Review"
+    }
+
 
 })
 
@@ -70,7 +79,7 @@ productSchema.pre("save", function (next) {
 
 
 /** Post hook */
-productSchema.post("save",function(){
+productSchema.post("save", function () {
     console.log("post hook")
 })
 

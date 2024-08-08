@@ -91,4 +91,5 @@ async function getProducts(req, res) {
         data: result
     })
 }
+
 module.exports = productRouter;
